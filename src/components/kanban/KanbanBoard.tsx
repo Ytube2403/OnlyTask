@@ -103,8 +103,8 @@ export function KanbanBoard() {
                                 setMobileTab(col.id.toString());
                             }}
                             className={`flex-1 min-w-max py-2 px-3 text-sm font-bold rounded-lg transition-all ${mobileTab === col.id.toString()
-                                    ? 'bg-white text-black shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-black shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             {t_status(col.id)}
@@ -117,7 +117,7 @@ export function KanbanBoard() {
 
                 {/* DeskTop & Mobile Columns Container */}
                 <div
-                    className="flex-1 w-full flex overflow-hidden relative"
+                    className="flex-1 w-full flex overflow-hidden md:overflow-x-auto relative md:gap-6 pb-2"
                     onTouchStart={(e) => {
                         const touch = e.touches[0];
                         dragStartColumnId.current = `${touch.clientX}`;
@@ -141,7 +141,7 @@ export function KanbanBoard() {
                                 return (
                                     <div
                                         key={col.id}
-                                        className={`h-full absolute inset-0 md:relative md:flex-1 md:block transition-opacity duration-300 md:opacity-100 ${isActiveMobileConfig ? 'block z-10 opacity-100' : 'hidden opacity-0'} md:translate-x-0 md:!mr-6 last:!mr-0 overflow-y-auto pb-4`}
+                                        className={`h-full absolute inset-0 md:relative md:min-w-[320px] md:block transition-opacity duration-300 md:opacity-100 ${isActiveMobileConfig ? 'block z-10 opacity-100' : 'hidden opacity-0'} md:translate-x-0 overflow-y-auto pb-4`}
                                     >
                                         <motion.div
                                             custom={dragDirection}

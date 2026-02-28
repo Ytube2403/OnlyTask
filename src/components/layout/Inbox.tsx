@@ -249,9 +249,23 @@ export function Inbox() {
     }
 
     return (
-        <div className={`w-full md:w-80 h-full border-b md:border-b-0 md:border-r border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 flex relative z-10`}>
-            <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between mb-4">
+        <div className={`border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 flex z-10 ${isMobile && !isCollapsed
+                ? 'fixed inset-x-0 top-0 bottom-[72px] z-50'
+                : 'w-full md:w-80 h-full border-b md:border-b-0 md:border-r relative'
+            }`}>
+            {isMobile && !isCollapsed && (
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+                    <span className="font-bold text-gray-700">{t.allTasks}</span>
+                    <button
+                        onClick={() => setIsCollapsed(true)}
+                        className="p-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
+                    >
+                        <ChevronLeft size={16} className="rotate-90" />
+                    </button>
+                </div>
+            )}
+            <div className="p-6 border-b border-gray-100 flex-shrink-0">
+                <div className={`flex items-center justify-between mb-4 ${isMobile && !isCollapsed ? 'hidden' : ''}`}>
                     <h2 className="text-xl font-semibold text-gray-900 tracking-tight">{t.allTasks}</h2>
                     <div className="flex items-center gap-2">
                         <button
