@@ -46,7 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Listen for auth changes
             const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session?.user) {
-                    await loadUserProfile(session.user.id, session.user.email!);
+                    // Check if email is confirmed 
+                    if (session.user.email_confirmed_at) {
+                        await loadUserProfile(session.user.id, session.user.email!);
+                    } else {
+                        // If signed in but not confirmed (can happen if supabase auto-signs in)
+                        // we sign out to be safe
+                        await supabase.auth.signOut();
+                    }
                 } else if (event === 'SIGNED_OUT') {
                     setUser(null);
                 }
@@ -62,6 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const loadUserProfile = async (userId: string, email: string) => {
         try {
+            // Check auth again to ensure email_confirmed_at is present
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser && !authUser.email_confirmed_at) {
+                console.warn("Attempted to load profile for unconfirmed user.");
+                setUser(null);
+                return;
+            }
+
             const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -138,8 +153,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) return { success: false, error: error.message };
 
         // If data.user is returned but session is null, it usually means email confirmation is required
-        if (data.user && !data.session) {
-            return { success: true, error: "Registration successful! Please check your email to verify your account." }; // Using error field to pass success message for simplicity in UI, or we can just return success: true and handle it in UI based on context. Let's return a specific message.
+        // OR if session exists but email is not confirmed, we want to force sign out to prevent auto-login
+        if (data.user) {
+            const isConfirmed = !!data.user.email_confirmed_at;
+
+            if (!isConfirmed) {
+                // If Supabase auto-logged in (data.session exists) but email is not verified, 
+                // we must sign out immediately to prevent the app from entering authorized state.
+                if (data.session) {
+                    await supabase.auth.signOut();
+                }
+                return { success: true, error: "Registration successful! Please check your email to verify your account." };
+            }
         }
 
         // Wait a slight moment for the database trigger to create the profile

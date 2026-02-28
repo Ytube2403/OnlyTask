@@ -119,7 +119,11 @@ export function NotesView() {
             <FeatureTooltip
                 feature="notes"
                 title="Thư viện tài liệu (Library)"
-                description="Quản lý toàn bộ SOP và ghi chú của bạn. Bạn có thể lọc theo Tag hoặc tìm kiếm theo nội dung. Hãy tạo một tài liệu mới để bắt đầu chuẩn hoá quy trình."
+                bullets={[
+                    "Nơi quản lý toàn bộ các tiêu chuẩn, quy trình, và ghi chú của bạn.",
+                    "Dễ dàng phân loại, thanh lọc bằng hệ thống tag và tìm kiếm nội dung.",
+                    "Tạo trước tài liệu ở đây để gắn trực tiếp vào các task lúc làm việc.",
+                ]}
             />
         </>
     );

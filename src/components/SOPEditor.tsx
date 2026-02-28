@@ -120,7 +120,11 @@ export function SOPEditor({ sopId, initialTitle = "", initialContent = "", onClo
             <FeatureTooltip
                 feature="sops"
                 title="Trình chỉnh sửa SOP"
-                description="Ghi lại quy trình từng bước tại đây. Tiptap editor hỗ trợ Bold, Italic, Heading và List. Mọi thay đổi đều được tự động lưu."
+                bullets={[
+                    "Hỗ trợ ghi chú nhanh với các định dạng như In đậm, In nghiêng, Tiêu đề.",
+                    "Hệ thống sẽ tự động lưu lại mọi thay đổi của bạn trong tích tắc.",
+                    "Sau khi lưu, bạn có thể dễ dàng gắn tài liệu này vào các task cụ thể.",
+                ]}
             />
         </>
     );

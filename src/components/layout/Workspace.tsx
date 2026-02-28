@@ -305,10 +305,14 @@ export function Workspace() {
             <FeatureTooltip
                 feature="workspace"
                 title="Không gian làm việc (Workspace)"
-                description="Đây là trung tâm điều hành của bạn. Kéo thả task giữa các cột, chọn một task để bật Focus Mode với đồng hồ bấm giờ, và xem SOP hướng dẫn song song."
+                bullets={[
+                    "Kéo thả task giữa các cột để phân loại công việc.",
+                    "Chọn một task để bật Focus Mode và đồng hồ đếm ngược.",
+                    "Hiển thị nhanh tài liệu SOP song song lúc đang làm việc.",
+                ]}
                 shortcuts={[
-                    { key: "C", desc: "Tạo task mới" },
-                    { key: "Drag & Drop", desc: "Di chuyển task" },
+                    { key: "C", desc: "Tạo task mới nhận diện mọi nơi" },
+                    { key: "Kéo & Thả", desc: "Di chuyển task qua lại" },
                 ]}
             />
         </>

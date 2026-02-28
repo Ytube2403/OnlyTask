@@ -254,7 +254,11 @@ export function CalendarView() {
             <FeatureTooltip
                 feature="calendar"
                 title="Lịch công việc (Calendar)"
-                description="Xem tất cả task theo deadline trên lịch tháng. Thêm deadline cho task trong phần chi tiết task để nó xuất hiện ở đây. Click vào task để chuyển sang Focus Mode."
+                bullets={[
+                    "Tất cả công việc có thiết lập Deadline sẽ tự động hiển thị ở đây.",
+                    "Giúp bạn có cái nhìn tổng quan khối lượng việc trong cả tháng.",
+                    "Click trực tiếp vào task để nhảy ngay vào Focus Mode giải quyết.",
+                ]}
             />
         </>
     );
