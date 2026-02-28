@@ -92,7 +92,7 @@ export function KanbanBoard() {
         >
             <div className="flex flex-col h-full w-full overflow-hidden">
                 {/* Mobile Tabs Header */}
-                <div className="md:hidden flex gap-2 mb-4 p-1 bg-gray-100/80 rounded-xl overflow-x-auto flex-shrink-0">
+                <div className="xl:hidden flex gap-2 mb-4 p-1 bg-gray-100/80 rounded-xl overflow-x-auto flex-shrink-0">
                     {columns.map(col => (
                         <button
                             key={col.id}
@@ -117,7 +117,7 @@ export function KanbanBoard() {
 
                 {/* DeskTop & Mobile Columns Container */}
                 <div
-                    className="flex-1 w-full flex overflow-hidden md:overflow-x-auto relative md:gap-6 pb-2"
+                    className="flex-1 w-full flex overflow-hidden xl:overflow-x-auto relative xl:gap-6 pb-2"
                     onTouchStart={(e) => {
                         const touch = e.touches[0];
                         dragStartColumnId.current = `${touch.clientX}`;
@@ -141,7 +141,7 @@ export function KanbanBoard() {
                                 return (
                                     <div
                                         key={col.id}
-                                        className={`h-full absolute inset-0 md:relative md:min-w-[320px] md:block transition-opacity duration-300 md:opacity-100 ${isActiveMobileConfig ? 'block z-10 opacity-100' : 'hidden opacity-0'} md:translate-x-0 overflow-y-auto pb-4`}
+                                        className={`h-full absolute inset-0 xl:relative xl:min-w-[320px] xl:block transition-opacity duration-300 xl:opacity-100 ${isActiveMobileConfig ? 'block z-10 opacity-100' : 'hidden opacity-0'} xl:translate-x-0 overflow-y-auto pb-4`}
                                     >
                                         <motion.div
                                             custom={dragDirection}
