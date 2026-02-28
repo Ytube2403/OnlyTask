@@ -6,27 +6,31 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { useEffect, useState } from "react";
 import { useSOPs } from "@/context/SOPContext";
 import { FeatureTooltip } from "./ui/FeatureTooltip";
+import { X, Trash2 } from "lucide-react";
 
 interface SOPEditorProps {
     sopId?: string;
     initialTitle?: string;
     initialContent?: string;
+    initialTags?: string[];
     onClose?: () => void;
 }
 
-export function SOPEditor({ sopId, initialTitle = "", initialContent = "", onClose }: SOPEditorProps) {
-    const { updateSOP } = useSOPs();
+export function SOPEditor({ sopId, initialTitle = "", initialContent = "", initialTags = [], onClose }: SOPEditorProps) {
+    const { updateSOP, deleteSOP } = useSOPs();
     const [title, setTitle] = useState(initialTitle);
+    const [tags, setTags] = useState<string[]>(initialTags);
+    const [tagInput, setTagInput] = useState("");
 
     // Auto-save logic
     useEffect(() => {
         const handler = setTimeout(() => {
-            if (sopId && (title !== initialTitle)) {
-                updateSOP(sopId, { title });
+            if (sopId && (title !== initialTitle || JSON.stringify(tags) !== JSON.stringify(initialTags))) {
+                updateSOP(sopId, { title, tags });
             }
         }, 1000);
         return () => clearTimeout(handler);
-    }, [title, sopId, initialTitle, updateSOP]);
+    }, [title, tags, sopId, initialTitle, initialTags, updateSOP]);
     const editor = useEditor({
         extensions: [
             StarterKit,
@@ -57,6 +61,28 @@ export function SOPEditor({ sopId, initialTitle = "", initialContent = "", onClo
     if (!editor) {
         return null;
     }
+
+    const handleAddTag = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && tagInput.trim() !== "") {
+            e.preventDefault();
+            const newTag = tagInput.trim().toLowerCase();
+            if (!tags.includes(newTag)) {
+                setTags([...tags, newTag]);
+            }
+            setTagInput("");
+        }
+    };
+
+    const handleRemoveTag = (tagToRemove: string) => {
+        setTags(tags.filter(t => t !== tagToRemove));
+    };
+
+    const handleDelete = async () => {
+        if (sopId && window.confirm("Bạn có chắc chắn muốn xóa tài liệu này không? Hành động này không thể hoàn tác.")) {
+            await deleteSOP(sopId);
+            if (onClose) onClose();
+        }
+    };
 
     return (
         <>
@@ -91,7 +117,16 @@ export function SOPEditor({ sopId, initialTitle = "", initialContent = "", onClo
                         • List
                     </button>
                     {onClose && (
-                        <div className="ml-auto">
+                        <div className="ml-auto flex items-center gap-2">
+                            {sopId && (
+                                <button
+                                    onClick={handleDelete}
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center"
+                                    title="Xóa tài liệu"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                             <button
                                 onClick={onClose}
                                 className="p-2 text-gray-400 hover:text-black hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium"
@@ -102,15 +137,44 @@ export function SOPEditor({ sopId, initialTitle = "", initialContent = "", onClo
                     )}
                 </div>
 
-                <div className="flex-1 overflow-y-auto cursor-text p-0" onClick={() => editor.commands.focus()}>
-                    <div className="px-6 pt-6 pb-2">
+                <div className="flex-1 overflow-y-auto cursor-text p-0" onClick={(e) => {
+                    if ((e.target as HTMLElement).closest('.editor-header-area')) return;
+                    editor.commands.focus();
+                }}>
+                    <div className="px-6 pt-6 pb-4 border-b border-gray-100 mb-4 editor-header-area">
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="SOP Title..."
-                            className="w-full text-3xl font-bold bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-300"
+                            className="w-full text-3xl font-bold bg-transparent border-none focus:outline-none text-gray-900 placeholder:text-gray-300 mb-4"
                         />
+
+                        {/* Tags Input Area */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {tags.map((tag) => (
+                                <span
+                                    key={tag}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-semibold"
+                                >
+                                    #{tag}
+                                    <button
+                                        onClick={() => handleRemoveTag(tag)}
+                                        className="hover:text-black hover:bg-gray-200 rounded-full p-0.5"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            ))}
+                            <input
+                                type="text"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={handleAddTag}
+                                placeholder={tags.length === 0 ? "Thêm tag (nhấn Enter)..." : "Nhập thêm tag..."}
+                                className="text-sm bg-transparent border-none focus:outline-none text-gray-600 placeholder:text-gray-400 min-w-[150px]"
+                            />
+                        </div>
                     </div>
                     <div className="px-6 pb-6 h-full">
                         <EditorContent editor={editor} />

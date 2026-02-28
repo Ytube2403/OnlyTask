@@ -53,7 +53,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white font-sans text-gray-900 selection:bg-gray-200">
+    <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-white font-sans text-gray-900 selection:bg-gray-200 pb-[72px] md:pb-0">
       <Sidebar />
       <Inbox />
       {currentView === "workspace" && <Workspace />}

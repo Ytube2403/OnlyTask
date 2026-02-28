@@ -2,6 +2,7 @@
 
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useTasks } from "@/context/TaskContext";
+import { useApp } from "@/context/AppContext";
 import { useState, useMemo } from "react";
 import { isAfter, isPast, isToday } from "date-fns";
 import { TaskDetailsModal } from "../TaskDetailsModal";
@@ -11,6 +12,7 @@ import { useSettings } from "@/context/SettingsContext";
 
 export function Inbox() {
     const { tasks, addTask, activeTask, setActiveTask, updateTask } = useTasks();
+    const { currentView } = useApp();
     const { settings } = useSettings();
     const [adding, setAdding] = useState(false);
     const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -179,7 +181,7 @@ export function Inbox() {
 
     if (isCollapsed) {
         return (
-            <div className="w-16 h-full border-r border-gray-200 bg-white flex flex-col items-center py-6 flex-shrink-0">
+            <div className="hidden md:flex w-16 h-full border-r border-gray-200 bg-white flex-col items-center py-6 flex-shrink-0">
                 <button
                     onClick={() => setIsCollapsed(false)}
                     title={t.expand}
@@ -191,8 +193,10 @@ export function Inbox() {
         );
     }
 
+    const isHiddenOnMobile = currentView !== "workspace" || !!activeTask;
+
     return (
-        <div className="w-80 h-full border-r border-gray-200 bg-white flex flex-col flex-shrink-0 transition-all duration-300">
+        <div className={`w-full md:w-80 h-full border-r border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 ${isHiddenOnMobile ? "hidden md:flex" : "flex"}`}>
             <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold text-gray-900 tracking-tight">{t.allTasks}</h2>

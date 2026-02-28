@@ -1,11 +1,11 @@
 import { useSOPs } from "@/context/SOPContext";
-import { Search, Folder, Hash, Plus, FileText, MoreVertical } from "lucide-react";
+import { Search, Folder, Hash, Plus, FileText, Trash2, FilePlus } from "lucide-react";
 import { useState } from "react";
 import { SOPEditor } from "../SOPEditor";
 import { FeatureTooltip } from "@/components/ui/FeatureTooltip";
 
 export function NotesView() {
-    const { sops, searchQuery, setSearchQuery, selectedTag, setSelectedTag, addSOP } = useSOPs();
+    const { sops, searchQuery, setSearchQuery, selectedTag, setSelectedTag, addSOP, deleteSOP } = useSOPs();
     const [editingSopId, setEditingSopId] = useState<string | null>(null);
 
     // Lấy danh sách tags unique
@@ -23,6 +23,13 @@ export function NotesView() {
         if (newSop) setEditingSopId(newSop.id);
     };
 
+    const handleDeleteSOP = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation(); // Ngăn mở card khi click nút xóa
+        if (window.confirm("Bạn có chắc chắn muốn xóa tài liệu này không?")) {
+            await deleteSOP(id);
+        }
+    };
+
     if (editingSopId) {
         const editingSop = sops.find(s => s.id === editingSopId);
         return (
@@ -32,6 +39,7 @@ export function NotesView() {
                         sopId={editingSop?.id}
                         initialTitle={editingSop?.title}
                         initialContent={editingSop?.content}
+                        initialTags={editingSop?.tags}
                         onClose={() => setEditingSopId(null)}
                     />
                 </div>
@@ -90,30 +98,62 @@ export function NotesView() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                        {filteredSOPs.map(sop => (
-                            <div
-                                key={sop.id}
-                                onClick={() => setEditingSopId(sop.id)}
-                                className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col h-48"
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-2 bg-neutral-100 px-2 py-1 rounded-md text-xs font-semibold text-neutral-600">
-                                        <FileText size={14} /> SOP
-                                    </div>
-                                    <button className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded-md">
-                                        <MoreVertical size={16} />
-                                    </button>
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-snug">{sop.title}</h3>
-                                <div className="mt-auto flex flex-wrap gap-2">
-                                    {sop.tags.map(tag => (
-                                        <span key={tag} className="text-xs font-medium text-gray-500">#{tag}</span>
-                                    ))}
-                                </div>
+                    {filteredSOPs.length === 0 ? (
+                        <div className="max-w-6xl mx-auto flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-dashed border-gray-300 min-h-[400px]">
+                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                                <FilePlus className="text-gray-300 w-10 h-10" />
                             </div>
-                        ))}
-                    </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Thư viện của bạn đang trống</h3>
+                            <p className="text-gray-500 mb-8 max-w-sm text-center">
+                                Chưa có tài liệu nào ở đây. Bắt đầu xây dựng cơ sở tri thức và quy trình làm việc của bạn bằng cách tạo tài liệu đầu tiên.
+                            </p>
+                            <button
+                                onClick={handleCreateNew}
+                                className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-800 transition-all hover:-translate-y-0.5"
+                            >
+                                <Plus size={18} /> Tạo tài liệu mới ngay
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                            {filteredSOPs.map(sop => (
+                                <div
+                                    key={sop.id}
+                                    onClick={() => setEditingSopId(sop.id)}
+                                    className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col h-48 relative overflow-hidden"
+                                >
+                                    <div className="flex items-start justify-between mb-3 relative z-10">
+                                        <div className="flex items-center gap-2 bg-neutral-100 px-2.5 py-1 rounded-md text-xs font-semibold text-neutral-600">
+                                            <FileText size={14} /> SOP
+                                        </div>
+                                        <button
+                                            onClick={(e) => handleDeleteSOP(e, sop.id)}
+                                            className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-50 hover:text-red-500 rounded-lg"
+                                            title="Xóa tài liệu"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-snug z-10">{sop.title}</h3>
+
+                                    <div className="mt-auto flex flex-col gap-3 z-10">
+                                        {sop.tags && sop.tags.length > 0 && (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {sop.tags.map(tag => (
+                                                    <span key={tag} className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">#{tag}</span>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="text-xs text-gray-400 font-medium">
+                                            Cập nhật: {new Date(sop.updatedAt).toLocaleDateString("vi-VN", {
+                                                day: '2-digit', month: '2-digit', year: 'numeric'
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
             <FeatureTooltip

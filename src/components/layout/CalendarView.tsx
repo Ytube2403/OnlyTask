@@ -133,8 +133,8 @@ export function CalendarView() {
                 </div>
 
                 {/* Calendar Grid Container */}
-                <div className="flex-1 flex flex-col overflow-auto bg-white p-6">
-                    <div className="border border-gray-200 rounded-xl overflow-hidden flex-1 flex flex-col shadow-sm bg-white">
+                <div className="flex-1 flex flex-col overflow-auto bg-white p-2 sm:p-6">
+                    <div className="border border-gray-200 rounded-xl overflow-hidden flex-1 flex flex-col shadow-sm bg-white min-w-[700px] lg:min-w-0">
 
                         {/* Days of Week Header */}
                         <div className="grid grid-cols-7 border-b border-gray-200 bg-white flex-shrink-0">

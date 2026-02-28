@@ -76,13 +76,18 @@ export function Workspace() {
         stopTimer: "Stop Timer"
     };
 
+    const isHiddenOnMobile = !activeTask;
+
     return (
         <>
-            <div className="flex-1 h-full bg-neutral-50 p-6 sm:p-10 overflow-y-auto flex flex-col relative w-full">
+            <div className={`flex-1 h-[calc(100vh-72px)] md:h-full bg-neutral-50 p-4 sm:p-6 md:p-10 overflow-y-auto flex-col relative w-full ${isHiddenOnMobile ? "hidden md:flex" : "flex"}`}>
                 {/* Top Banner (Hero Section for Star Task & Timer) */}
-                <div className="w-full bg-white border border-gray-200 rounded-3xl p-8 mb-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 flex-shrink-0">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-4">
+                <div className="w-full bg-white border border-gray-200 rounded-3xl p-6 md:p-8 mb-6 md:mb-8 shadow-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 flex-shrink-0">
+                    <div className="flex-1 w-full">
+                        <div className="flex items-center gap-2 mb-4">
+                            <button onClick={() => setActiveTask(null)} className="md:hidden px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg text-sm font-bold tracking-wider flex items-center justify-center">
+                                ← Back
+                            </button>
                             <span className="px-3 py-1.5 bg-lime-200 text-lime-900 rounded-lg text-sm font-bold uppercase tracking-wider">
                                 {t.focus}
                             </span>
@@ -97,9 +102,9 @@ export function Workspace() {
                         </p>
                     </div>
 
-                    <div className="flex flex-col items-start md:items-end gap-5 min-w-[240px]">
-                        <div className="flex items-center gap-4">
-                            <div className="text-5xl font-black tabular-nums tracking-tighter text-gray-900 min-w-[140px] text-right">
+                    <div className="flex flex-col items-start xl:items-end gap-5 w-full xl:w-auto min-w-[240px]">
+                        <div className="flex items-center justify-between xl:justify-end w-full gap-4">
+                            <div className="text-5xl font-black tabular-nums tracking-tighter text-gray-900 min-w-[140px] text-left xl:text-right">
                                 {formatTime(time)}
                             </div>
                             {activeTask && (
@@ -152,15 +157,15 @@ export function Workspace() {
                 </div>
 
                 {/* Bottom Section (Kanban Board & Panels Split View) */}
-                <div className="flex-1 relative min-h-[500px] flex overflow-hidden gap-6">
-                    <div className={`transition-all duration-300 ${sopOpen || statsOpen ? 'w-[55%]' : 'w-full'} overflow-x-auto`}>
+                <div className="flex-1 relative min-h-[500px] flex flex-col lg:flex-row overflow-hidden gap-6">
+                    <div className={`transition-all duration-300 ${sopOpen || statsOpen ? 'w-full lg:w-[55%]' : 'w-full'} overflow-x-auto overflow-y-hidden pb-4`}>
                         <KanbanBoard />
                     </div>
 
                     {/* SOP Editor Panel */}
                     {
                         sopOpen && (
-                            <div className="w-[45%] h-full animate-in slide-in-from-right-8 duration-300 relative rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                            <div className="w-full lg:w-[45%] h-[500px] lg:h-full animate-in slide-in-from-bottom-8 lg:slide-in-from-right-8 duration-300 relative rounded-xl border border-gray-200 overflow-hidden shadow-sm flex-shrink-0">
                                 <SOPEditor
                                     sopId={linkedSop?.id}
                                     initialTitle={linkedSop?.title || "Start writing..."}
@@ -174,7 +179,7 @@ export function Workspace() {
                     {/* Statistics Dashboard Panel */}
                     {
                         statsOpen && (
-                            <div className="w-[45%] h-full animate-in slide-in-from-right-8 duration-300 relative">
+                            <div className="w-full lg:w-[45%] h-[500px] lg:h-full animate-in slide-in-from-bottom-8 lg:slide-in-from-right-8 duration-300 relative flex-shrink-0">
                                 <StatisticsDashboard />
                             </div>
                         )
@@ -199,7 +204,7 @@ export function Workspace() {
                                     </div>
 
                                     <div className="flex flex-col items-start xl:items-end w-full xl:w-auto">
-                                        <div className="text-[6rem] sm:text-[8rem] font-black tracking-tighter tabular-nums leading-none text-lime-400 drop-shadow-[0_0_40px_rgba(163,230,53,0.15)]">
+                                        <div className="text-[5rem] sm:text-[8rem] font-black tracking-tighter tabular-nums leading-none text-lime-400 drop-shadow-[0_0_40px_rgba(163,230,53,0.15)]">
                                             {formatTime(time)}
                                         </div>
                                         <div className="flex gap-4 mt-6 w-full sm:w-auto">

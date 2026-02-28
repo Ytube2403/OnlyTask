@@ -31,8 +31,8 @@ export function Sidebar() {
 
     return (
         <>
-            <div className="w-16 h-full border-r border-gray-200 bg-white flex flex-col items-center py-6 gap-6 flex-shrink-0 z-10 relative">
-                <div className="p-2 bg-black text-white rounded-xl mb-4">
+            <div className="w-full h-[72px] md:w-16 md:h-full border-t md:border-t-0 md:border-r border-gray-200 bg-white flex flex-row md:flex-col items-center justify-around md:justify-start py-2 md:py-6 md:gap-6 flex-shrink-0 z-50 fixed bottom-0 left-0 md:relative">
+                <div className="hidden md:flex p-2 bg-black text-white rounded-xl mb-4">
                     <LayoutDashboard size={20} />
                 </div>
                 <NavButton
@@ -50,7 +50,7 @@ export function Sidebar() {
                     icon={<BookOpen size={20} />}
                     active={currentView === "notes"}
                     onClick={() => setCurrentView("notes")} />
-                <div className="mt-auto flex flex-col items-center gap-3">
+                <div className="md:mt-auto flex flex-row md:flex-col items-center gap-2 md:gap-3">
                     <NavButton
                         title={t.settings}
                         icon={<Settings size={20} />}
