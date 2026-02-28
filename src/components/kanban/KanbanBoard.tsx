@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     DndContext,
     DragOverlay,
@@ -29,6 +30,8 @@ export function KanbanBoard() {
 
     const [activeColumn, setActiveColumn] = useState<any>(null); // To fix TS issues quickly
     const [isMounted, setIsMounted] = useState(false);
+    const [mobileTab, setMobileTab] = useState<string>(columns[0] ? columns[0].id.toString() : "todo");
+    const [dragDirection, setDragDirection] = useState(0);
 
     const dragStartColumnId = useRef<string | null>(null);
 
@@ -61,6 +64,24 @@ export function KanbanBoard() {
         return <div className="flex gap-6 h-full w-full overflow-x-auto" />;
     }
 
+    const t_status = (id: string | number) => {
+        if (id === 'todo') return 'Cần làm';
+        if (id === 'in_progress') return 'Đang làm';
+        if (id === 'done') return 'Hoàn thành';
+        return id;
+    }
+
+    const handleSwipe = (direction: number) => {
+        const currentIndex = columns.findIndex(c => c.id === mobileTab);
+        if (direction === 1 && currentIndex > 0) { // Swipe right -> previous tab
+            setDragDirection(-1);
+            setMobileTab(columns[currentIndex - 1].id.toString());
+        } else if (direction === -1 && currentIndex < columns.length - 1) { // Swipe left -> next tab
+            setDragDirection(1);
+            setMobileTab(columns[currentIndex + 1].id.toString());
+        }
+    };
+
     return (
         <DndContext
             sensors={sensors}
@@ -69,16 +90,78 @@ export function KanbanBoard() {
             onDragOver={onDragOver}
             onDragEnd={onDragEnd}
         >
-            <div className="flex gap-6 h-full w-full overflow-x-auto overflow-y-hidden pb-4">
-                <SortableContext items={columnsId} strategy={horizontalListSortingStrategy}>
-                    {columns.map((col) => (
-                        <KanbanColumn
+            <div className="flex flex-col h-full w-full overflow-hidden">
+                {/* Mobile Tabs Header */}
+                <div className="md:hidden flex gap-2 mb-4 p-1 bg-gray-100/80 rounded-xl overflow-x-auto flex-shrink-0">
+                    {columns.map(col => (
+                        <button
                             key={col.id}
-                            column={col}
-                            tasks={tasksByColumn[col.id] || []}
-                        />
+                            onClick={() => {
+                                const currentIndex = columns.findIndex(c => c.id === mobileTab);
+                                const newIndex = columns.findIndex(c => c.id === col.id.toString());
+                                setDragDirection(newIndex > currentIndex ? 1 : -1);
+                                setMobileTab(col.id.toString());
+                            }}
+                            className={`flex-1 min-w-max py-2 px-3 text-sm font-bold rounded-lg transition-all ${mobileTab === col.id.toString()
+                                    ? 'bg-white text-black shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            {t_status(col.id)}
+                            <span className="ml-1.5 text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md">
+                                {tasksByColumn[col.id]?.length || 0}
+                            </span>
+                        </button>
                     ))}
-                </SortableContext>
+                </div>
+
+                {/* DeskTop & Mobile Columns Container */}
+                <div
+                    className="flex-1 w-full flex overflow-hidden relative"
+                    onTouchStart={(e) => {
+                        const touch = e.touches[0];
+                        dragStartColumnId.current = `${touch.clientX}`;
+                    }}
+                    onTouchEnd={(e) => {
+                        if (!dragStartColumnId.current) return;
+                        const startX = parseFloat(dragStartColumnId.current);
+                        const endX = e.changedTouches[0].clientX;
+                        const diff = endX - startX;
+
+                        if (Math.abs(diff) > 50) {
+                            handleSwipe(diff > 0 ? 1 : -1);
+                        }
+                        dragStartColumnId.current = null;
+                    }}
+                >
+                    <SortableContext items={columnsId} strategy={horizontalListSortingStrategy}>
+                        <AnimatePresence initial={false} mode="popLayout" custom={dragDirection}>
+                            {columns.map((col) => {
+                                const isActiveMobileConfig = mobileTab === col.id.toString();
+                                return (
+                                    <div
+                                        key={col.id}
+                                        className={`h-full absolute inset-0 md:relative md:flex-1 md:block transition-opacity duration-300 md:opacity-100 ${isActiveMobileConfig ? 'block z-10 opacity-100' : 'hidden opacity-0'} md:translate-x-0 md:!mr-6 last:!mr-0 overflow-y-auto pb-4`}
+                                    >
+                                        <motion.div
+                                            custom={dragDirection}
+                                            initial={{ x: dragDirection > 0 ? 100 : -100, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            exit={{ x: dragDirection > 0 ? -100 : 100, opacity: 0 }}
+                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                            className="h-full w-full"
+                                        >
+                                            <KanbanColumn
+                                                column={col}
+                                                tasks={tasksByColumn[col.id] || []}
+                                            />
+                                        </motion.div>
+                                    </div>
+                                )
+                            })}
+                        </AnimatePresence>
+                    </SortableContext>
+                </div>
             </div>
 
             {typeof window !== "undefined" &&

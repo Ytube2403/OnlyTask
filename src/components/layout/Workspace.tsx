@@ -9,6 +9,7 @@ import { useTasks } from "@/context/TaskContext";
 import { useSOPs } from "@/context/SOPContext";
 import { useSettings } from "@/context/SettingsContext";
 import { FeatureTooltip } from "@/components/ui/FeatureTooltip";
+import { ChevronDown } from "lucide-react";
 
 export function Workspace() {
     const { activeTask, setActiveTask, moveTask, triggerReview, updateTask } = useTasks();
@@ -18,8 +19,17 @@ export function Workspace() {
     const [statsOpen, setStatsOpen] = useState(false);
     const [timerRunning, setTimerRunning] = useState(false);
     const [time, setTime] = useState(0);
+    const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
     const linkedSop = activeTask?.linkedSopIds?.[0] ? sops.find(s => s.id === activeTask.linkedSopIds![0]) : null;
+
+    useEffect(() => {
+        if (activeTask) {
+            setIsMobileSheetOpen(true);
+        } else {
+            setIsMobileSheetOpen(false);
+        }
+    }, [activeTask]);
 
     // Reset timer when active task changes
     useEffect(() => {
@@ -78,9 +88,10 @@ export function Workspace() {
 
     return (
         <>
-            <div className="flex-1 h-[calc(100vh-72px)] md:h-full bg-neutral-50 p-4 sm:p-6 md:p-10 overflow-y-auto flex-col relative w-full flex">
-                {/* Top Banner (Hero Section for Star Task & Timer) */}
-                <div className="w-full bg-white border border-gray-200 rounded-3xl p-6 md:p-8 mb-6 md:mb-8 shadow-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 flex-shrink-0">
+            <div className="flex-1 h-[calc(100vh-72px)] md:h-full bg-neutral-50 p-2 md:p-4 sm:p-6 md:p-10 overflow-y-auto flex-col relative w-full flex">
+
+                {/* Desktop Top Banner (Hero Section for Star Task & Timer) */}
+                <div className="hidden md:flex w-full bg-white border border-gray-200 rounded-3xl p-6 md:p-8 mb-6 md:mb-8 shadow-sm flex-col xl:flex-row items-start xl:items-center justify-between gap-6 flex-shrink-0">
                     <div className="flex-1 w-full">
                         <div className="flex items-center gap-2 mb-4">
                             <button onClick={() => setActiveTask(null)} className="md:hidden px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg text-sm font-bold tracking-wider flex items-center justify-center">
@@ -155,8 +166,8 @@ export function Workspace() {
                 </div>
 
                 {/* Bottom Section (Kanban Board & Panels Split View) */}
-                <div className="flex-1 relative min-h-[500px] flex flex-col lg:flex-row overflow-hidden gap-6">
-                    <div className={`transition-all duration-300 ${sopOpen || statsOpen ? 'w-full lg:w-[55%]' : 'w-full'} overflow-x-auto overflow-y-hidden pb-4`}>
+                <div className="flex-1 relative h-full min-h-[500px] flex flex-col lg:flex-row overflow-hidden gap-6">
+                    <div className={`transition-all duration-300 ${sopOpen || statsOpen ? 'hidden lg:block lg:w-[55%]' : 'w-full'} overflow-x-auto overflow-y-hidden pb-4 md:pb-0 h-full`}>
                         <KanbanBoard />
                     </div>
 
@@ -177,12 +188,116 @@ export function Workspace() {
                     {/* Statistics Dashboard Panel */}
                     {
                         statsOpen && (
-                            <div className="w-full lg:w-[45%] h-[500px] lg:h-full animate-in slide-in-from-bottom-8 lg:slide-in-from-right-8 duration-300 relative flex-shrink-0">
+                            <div className="hidden lg:flex w-full lg:w-[45%] h-[500px] lg:h-full animate-in slide-in-from-bottom-8 lg:slide-in-from-right-8 duration-300 relative flex-shrink-0">
                                 <StatisticsDashboard />
                             </div>
                         )
                     }
                 </div >
+
+                {/* Mobile Bottom Sheet for Workspace Details */}
+                {isMobileSheetOpen && (
+                    <div
+                        className="md:hidden fixed inset-0 z-50 bg-black/40 animate-in fade-in duration-200"
+                        onClick={() => {
+                            if (!timerRunning) {
+                                setIsMobileSheetOpen(false);
+                                setTimeout(() => setActiveTask(null), 300);
+                            }
+                        }}
+                    >
+                        <div
+                            className="absolute bottom-0 left-0 w-full h-[90vh] bg-white rounded-t-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-full duration-300"
+                            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                        >
+                            <div className="w-full flex justify-center py-3"
+                                onClick={() => {
+                                    if (!timerRunning) {
+                                        setIsMobileSheetOpen(false);
+                                        setTimeout(() => setActiveTask(null), 300);
+                                    }
+                                }}>
+                                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                            </div>
+
+                            {/* Sticky Timer Area in Bottom Sheet */}
+                            <div className="sticky top-0 bg-white/90 backdrop-blur-md px-6 pb-4 border-b border-gray-100 z-10 flex flex-col">
+                                <h1 className="text-xl font-bold text-gray-900 mb-1 tracking-tight line-clamp-1">
+                                    {activeTask?.content}
+                                </h1>
+                                <p className="text-gray-500 font-medium text-sm mb-4 line-clamp-1">
+                                    {linkedSop ? <span className="text-blue-600 font-medium">{t.sopLink} {linkedSop.title}</span> : t.noSop}
+                                </p>
+
+                                <div className="flex items-center justify-between">
+                                    <div className={`text-4xl font-black tabular-nums tracking-tighter transition-colors ${timerRunning ? 'text-lime-500 drop-shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'text-gray-900'}`}>
+                                        {formatTime(time)}
+                                    </div>
+                                    <button
+                                        disabled={!activeTask}
+                                        onClick={() => {
+                                            if (timerRunning) {
+                                                handleStopTimer();
+                                            } else {
+                                                setTimerRunning(true);
+                                            }
+                                        }}
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all ${timerRunning
+                                            ? "bg-red-50 text-red-500 ring-2 ring-red-500 hover:bg-red-100 shadow-red-500/20"
+                                            : "bg-black text-white hover:scale-105"
+                                            }`}
+                                    >
+                                        {timerRunning ? <div className="w-4 h-4 bg-red-500 rounded-sm" /> : <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1" />}
+                                    </button>
+                                </div>
+
+                                {timerRunning && (
+                                    <button
+                                        onClick={() => {
+                                            const finalTime = time;
+                                            handleStopTimer();
+                                            setIsMobileSheetOpen(false);
+
+                                            if (activeTask && activeTask.columnId !== "done") {
+                                                moveTask(activeTask.id.toString(), "", "done");
+                                                const updatedTask = {
+                                                    ...activeTask,
+                                                    columnId: "done",
+                                                    actualTimeSeconds: (activeTask.actualTimeSeconds || 0) + finalTime
+                                                };
+                                                setActiveTask(updatedTask);
+                                                triggerReview(updatedTask);
+                                            }
+                                        }}
+                                        className="mt-4 w-full py-3 bg-lime-400 text-black rounded-xl text-sm font-bold hover:bg-lime-500 transition-all shadow-sm flex items-center justify-center gap-2"
+                                    >
+                                        <Star size={18} className="fill-black" />
+                                        Complete
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Scrollable SOP Content inside Bottom Sheet */}
+                            <div className="flex-1 overflow-y-auto p-6">
+                                {linkedSop ? (
+                                    <div className="prose prose-sm prose-gray max-w-none">
+                                        <div dangerouslySetInnerHTML={{ __html: linkedSop.content }} />
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-center mt-10">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                            <span className="text-2xl">📝</span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-gray-900 mb-2">No SOP linked</h3>
+                                        <p className="text-gray-500 text-sm max-w-[250px]">
+                                            Open this task on desktop to link or write Standard Operating Procedures.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Focus Mode Fullscreen Overlay */}
                 {

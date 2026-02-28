@@ -55,7 +55,9 @@ export default function Home() {
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-white font-sans text-gray-900 selection:bg-gray-200 pb-[72px] md:pb-0">
       <Sidebar />
-      <Inbox />
+      <div className={`md:flex h-full flex-shrink-0 ${currentView === 'workspace' ? 'flex w-full md:w-auto h-[50vh] md:h-full' : 'hidden'}`}>
+        <Inbox />
+      </div>
       {currentView === "workspace" && <Workspace />}
       {currentView === "calendar" && <CalendarView />}
       {currentView === "notes" && <NotesView />}

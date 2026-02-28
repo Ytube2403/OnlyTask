@@ -3,7 +3,7 @@
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useTasks } from "@/context/TaskContext";
 import { useApp } from "@/context/AppContext";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { isAfter, isPast, isToday } from "date-fns";
 import { TaskDetailsModal } from "../TaskDetailsModal";
 import { Task } from "@/types";
@@ -21,7 +21,19 @@ export function Inbox() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-    // --- UI States ---
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            const isMob = window.innerWidth < 768;
+            setIsMobile(isMob);
+            setIsCollapsed(isMob);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
 
@@ -179,6 +191,19 @@ export function Inbox() {
         }
     }
 
+    // FAB click handler
+    const handleFabClick = () => {
+        if (isCollapsed) {
+            setIsCollapsed(false);
+        }
+        setAdding(true);
+        // Scroll to top or handle focus
+        setTimeout(() => {
+            const input = document.getElementById('mobile-quick-add');
+            if (input) input.focus();
+        }, 100);
+    };
+
     if (isCollapsed) {
         return (
             <>
@@ -186,12 +211,6 @@ export function Inbox() {
                 <div className="flex md:hidden w-full p-4 border-b border-gray-200 bg-white items-center justify-between flex-shrink-0 z-10 shadow-sm relative">
                     <h2 className="text-lg font-semibold text-gray-900 tracking-tight">{t.allTasks}</h2>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setAdding(!adding)}
-                            title={t.quickAdd}
-                            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors shadow-sm">
-                            <Plus size={16} />
-                        </button>
                         <button
                             onClick={() => setIsCollapsed(false)}
                             title={t.expand}
@@ -204,6 +223,7 @@ export function Inbox() {
                 {adding && (
                     <div className="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 md:hidden z-10 relative">
                         <input
+                            id="mobile-quick-add"
                             type="text"
                             autoFocus
                             placeholder={t.addTaskPlaceholder}
@@ -229,7 +249,7 @@ export function Inbox() {
     }
 
     return (
-        <div className={`w-full md:w-80 h-[50vh] md:h-full border-b md:border-b-0 md:border-r border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 flex relative z-10`}>
+        <div className={`w-full md:w-80 h-full border-b md:border-b-0 md:border-r border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 flex relative z-10`}>
             <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold text-gray-900 tracking-tight">{t.allTasks}</h2>
@@ -237,7 +257,7 @@ export function Inbox() {
                         <button
                             onClick={() => setAdding(!adding)}
                             title={t.quickAdd}
-                            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors shadow-sm">
+                            className="hidden md:flex p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors shadow-sm">
                             <Plus size={16} />
                         </button>
                         <button
@@ -406,6 +426,14 @@ export function Inbox() {
                     </div>
                 ))}
             </div>
+
+            {/* Floating Action Button (FAB) for Mobile */}
+            <button
+                onClick={handleFabClick}
+                className="md:hidden absolute bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50 flex-shrink-0"
+            >
+                <Plus size={24} />
+            </button>
 
             {/* Modal */}
             {isModalOpen && selectedTask && (
