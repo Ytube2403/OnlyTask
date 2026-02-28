@@ -207,7 +207,7 @@ export function Workspace() {
                         }}
                     >
                         <div
-                            className="absolute bottom-0 left-0 w-full h-[90vh] bg-white rounded-t-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-full duration-300"
+                            className="absolute bottom-0 left-0 w-full h-[82vh] bg-white rounded-t-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-full duration-300"
                             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
                         >
                             <div className="w-full flex justify-center py-3"

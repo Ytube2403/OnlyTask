@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Task } from "@/types";
 import { useTasks } from "@/context/TaskContext";
 import { useSOPs } from "@/context/SOPContext";
+import { createPortal } from "react-dom";
 
 interface Props {
     isOpen: boolean;
@@ -95,9 +96,9 @@ export function TaskDetailsModal({ isOpen, onClose, task, defaultColumnId }: Pro
         onClose();
     };
 
-    return (
+    const modalContent = (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden">
+            <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden max-h-[85vh] md:max-h-[90vh]">
                 <div className="flex items-center justify-between p-6 border-b border-gray-100">
                     <h2 className="text-xl font-bold text-gray-900">
                         {task ? "Edit Task" : "Create Task"}
@@ -281,4 +282,8 @@ export function TaskDetailsModal({ isOpen, onClose, task, defaultColumnId }: Pro
             </div>
         </div>
     );
+
+    if (typeof window === 'undefined') return null;
+
+    return createPortal(modalContent, document.body);
 }
