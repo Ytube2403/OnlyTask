@@ -12,17 +12,25 @@ export function AuthModal() {
     const [displayName, setDisplayName] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
+    const [successMsg, setSuccessMsg] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+        setSuccessMsg("");
 
         if (mode === "login") {
             const result = await login(email, password);
             if (!result.success) setError(result.error || "Login failed");
         } else {
             const result = await register(email, password, displayName);
-            if (!result.success) setError(result.error || "Registration failed");
+            if (!result.success) {
+                setError(result.error || "Registration failed");
+            } else if (result.error && result.error.includes("Registration successful")) {
+                // We passed the success message via the error field in AuthContext for this specific case
+                setSuccessMsg(result.error);
+                setMode("login"); // Switch back to login so they can login after verifying
+            }
         }
     };
 
@@ -55,7 +63,12 @@ export function AuthModal() {
                         </button>
                     </div>
 
-                    {/* Error */}
+                    {/* Success/Error Messages */}
+                    {successMsg && (
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 font-medium animate-in fade-in duration-200">
+                            {successMsg}
+                        </div>
+                    )}
                     {error && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 font-medium animate-in fade-in duration-200">
                             {error}

@@ -119,10 +119,23 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
     const handleUpgrade = async () => {
         try {
             setIsUpgrading(true);
+
+            // ✅ SECURITY FIX (client-side): Lấy JWT token từ session hiện tại
+            // và gửi trong header thay vì gửi userId trong body.
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) {
+                alert('Vui lòng đăng nhập lại để tiếp tục.');
+                return;
+            }
+
             const res = await fetch('/api/create-payment-link', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user?.id })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                // Không gửi userId trong body nữa — server tự xác thực từ token
+                body: JSON.stringify({})
             });
 
             const data = await res.json();

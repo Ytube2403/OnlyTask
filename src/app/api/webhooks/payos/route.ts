@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // Khởi tạo PayOS. Do lỗi build của Next.js với file CJS, module trả về một object có key 'PayOS'
 const payosModule = require('@payos/node');
@@ -33,6 +34,13 @@ function getSupabaseAdmin() {
 
 export async function POST(req: Request) {
     try {
+        // ✅ SECURITY FIX #5: Rate limit webhook (30 req/phút/IP) để chống flooding
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        const rateLimit = checkRateLimit(`webhook:${ip}`, { limit: 30, windowMs: 60 * 1000 });
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 });
+        }
+
         const body = await req.json();
 
         // Verify the Webhook signature to ensure it actually came from PayOS

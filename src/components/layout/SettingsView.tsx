@@ -8,9 +8,10 @@ import {
 } from "lucide-react";
 
 const KEYBOARD_SHORTCUTS = [
-    { key: "Enter", desc: "Quick add task" },
-    { key: "Double Click", desc: "Open task details" },
-    { key: "Drag", desc: "Move tasks between columns" },
+    { key: "C", desc: "Create a new task" },
+    { key: "Cmd/Ctrl + Enter", desc: "Save / Create task" },
+    { key: "Enter", desc: "Quick add task in column" },
+    { key: "Drag & Drop", desc: "Move tasks between columns" },
 ];
 
 export function SettingsView() {

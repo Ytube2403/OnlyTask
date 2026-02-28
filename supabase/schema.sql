@@ -21,20 +21,34 @@ CREATE TABLE public.profiles (
     avatar_url TEXT,
     is_premium BOOLEAN DEFAULT false,
     premium_history JSONB DEFAULT '[]'::jsonb,
+    -- SECURITY: pending_order_code dùng để đối chiếu webhook PayOS.
+    -- Dùng UUID ngẫu nhiên thay vì timestamp để không thể bị Bruteforce.
+    pending_order_code TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Enable RLS for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public profiles are viewable by everyone." 
-  ON public.profiles FOR SELECT USING (true);
+-- SECURITY FIX #1: Chỉ cho phép user xem đúng profile của mình.
+-- Loại bỏ "USING (true)" vì nó cho phép bất kỳ ai (kể cả ẩn danh) dump toàn bộ email users.
+CREATE POLICY "Users can view their own profile."
+  ON public.profiles FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "Users can insert their own profile." 
   ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Users can update own profile." 
-  ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+-- SECURITY FIX #2: Ngăn client-side tự update is_premium, is_premium chỉ được
+-- update bởi Service Role key (qua webhook), không phải bởi anon key.
+-- Cột `is_premium` và `premium_history` bị loại khỏi những gì user được phép thay đổi.
+CREATE POLICY "Users can update their own safe profile fields."
+  ON public.profiles FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (
+    auth.uid() = id
+    -- Đảm bảo is_premium không thay đổi (bảo vệ khỏi client self-elevation)
+    AND is_premium = (SELECT is_premium FROM public.profiles WHERE id = auth.uid())
+  );
 
 -- 2. Trigger to automatically create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

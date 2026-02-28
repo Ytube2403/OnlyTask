@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // Khởi tạo PayOS. Do lỗi build của Next.js với file CJS, module trả về một object có key 'PayOS'
 const payosModule = require('@payos/node');
@@ -19,7 +20,7 @@ function getPayOS() {
     return payosClient;
 }
 
-// We need the service role key to bypass RLS when updating the user's premium status via webhook
+// Admin client dùng service role key để bypass RLS (chỉ dùng phía server)
 let supabaseAdminClient: any = null;
 function getSupabaseAdmin() {
     if (!supabaseAdminClient) {
@@ -31,22 +32,58 @@ function getSupabaseAdmin() {
     return supabaseAdminClient;
 }
 
+// Anon client dùng để xác thực session token của người gọi API
+function getSupabaseAnon(authHeader: string | null) {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        authHeader ? { global: { headers: { Authorization: authHeader } } } : undefined
+    );
+}
+
 export async function POST(req: Request) {
     try {
-        const { userId } = await req.json();
-
-        if (!userId) {
-            return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+        // ✅ SECURITY FIX #5 (Rate Limiting): Giới hạn 5 lần tạo payment link / IP / phút
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        const rateLimit = checkRateLimit(`payment:${ip}`, { limit: 5, windowMs: 60 * 1000 });
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: 'Quá nhiều yêu cầu. Vui lòng thử lại sau 1 phút.' },
+                {
+                    status: 429,
+                    headers: { 'Retry-After': String(Math.ceil((rateLimit.resetAt - Date.now()) / 1000)) }
+                }
+            );
         }
 
-        // Generate a unique 6-digit order code using timestamp
-        const orderCode = Number(String(Date.now()).slice(-6));
+        // ✅ SECURITY FIX #3 (IDOR): Không nhận userId từ body mà xác thực từ JWT session
+        // Điều này ngăn attacker giả mạo userId của người dùng khác.
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader) {
+            return NextResponse.json({ error: 'Unauthorized: missing token' }, { status: 401 });
+        }
 
-        // Save this pending order code to the user's profile so the webhook knows who paid
+        const supabaseAnon = getSupabaseAnon(authHeader);
+        const { data: { user }, error: authError } = await supabaseAnon.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized: invalid session' }, { status: 401 });
+        }
+
+        const userId = user.id; // ✅ userId an toàn, lấy từ server-side JWT, không phải từ body
+
+        // ✅ SECURITY FIX #4 (Bruteforce): Dùng UUID ngẫu nhiên thay vì timestamp 6 số
+        // Làm cho pending_order_code không thể bị đoán hoặc bruteforce.
+        const pendingOrderCode = crypto.randomUUID();
+
+        // Đồng thời tạo một numeric orderCode nhỏ cho PayOS (yêu cầu là số)
+        const orderCode = Number(String(Date.now()).slice(-8));
+
+        // Lưu pendingOrderCode (UUID) vào profile để webhook đối chiếu
         const supabaseAdmin = getSupabaseAdmin();
         const { error: dbError } = await supabaseAdmin
             .from('profiles')
-            .update({ pending_order_code: orderCode })
+            .update({ pending_order_code: pendingOrderCode })
             .eq('id', userId);
 
         if (dbError) {
@@ -55,14 +92,13 @@ export async function POST(req: Request) {
         }
 
         // The URL the user will be redirected to after paying (or cancelling)
-        // We try to get it from the request origin, or default to localhost
         const domain = req.headers.get('origin') || 'http://localhost:3000';
 
         const body = {
-            orderCode: orderCode, // Unique order code
-            amount: 199000, // E.g., 199,000 VND for Lifetime Premium
+            orderCode: orderCode,
+            amount: 199000, // 199,000 VND for Lifetime Premium
             description: "Nang cap Premium",
-            returnUrl: `${domain}?premium=success`,
+            returnUrl: `${domain}?premium=success&ref=${pendingOrderCode}`,
             cancelUrl: `${domain}?premium=cancel`,
         };
 

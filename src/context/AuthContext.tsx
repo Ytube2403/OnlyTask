@@ -111,7 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             password,
         });
 
-        if (error) return { success: false, error: error.message };
+        if (error) {
+            if (error.message.toLowerCase().includes("email not confirmed")) {
+                return { success: false, error: "Please verify your email address before logging in." };
+            }
+            return { success: false, error: error.message };
+        }
         return { success: true };
     };
 
@@ -131,6 +136,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         if (error) return { success: false, error: error.message };
+
+        // If data.user is returned but session is null, it usually means email confirmation is required
+        if (data.user && !data.session) {
+            return { success: true, error: "Registration successful! Please check your email to verify your account." }; // Using error field to pass success message for simplicity in UI, or we can just return success: true and handle it in UI based on context. Let's return a specific message.
+        }
 
         // Wait a slight moment for the database trigger to create the profile
         if (data.user) {

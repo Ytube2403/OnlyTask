@@ -56,4 +56,5 @@ export type AppSettings = {
         deletionWarnings: boolean;
         deadlineReminders: boolean;
     };
+    hasSeenOnboarding: boolean;
 };

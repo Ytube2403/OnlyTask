@@ -11,6 +11,7 @@ const defaultSettings: AppSettings = {
         deletionWarnings: true,
         deadlineReminders: true,
     },
+    hasSeenOnboarding: false,
 };
 
 interface SettingsContextType {
