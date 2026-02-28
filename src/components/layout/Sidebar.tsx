@@ -60,13 +60,20 @@ export function Sidebar() {
                     {user && (
                         <button
                             onClick={() => setAccountOpen(true)}
-                            className="relative group outline-none"
+                            className="relative group outline-none flex-shrink-0"
                             title={user.displayName || user.email}
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm transition-all group-hover:scale-105 group-hover:shadow-lg ${user.isPremium ? "ring-[3px] ring-amber-400 ring-offset-2" : ""} ${!user.avatarUrl ? `bg-gradient-to-br ${avatarGrad}` : "bg-cover bg-center"}`}
-                                style={user.avatarUrl ? { backgroundImage: `url(${user.avatarUrl})` } : {}}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm transition-all group-hover:scale-105 group-hover:shadow-lg flex-shrink-0 ${user.isPremium ? "ring-[3px] ring-amber-400 ring-offset-2" : ""} ${!user.avatarUrl ? `bg-gradient-to-br ${avatarGrad}` : "bg-white overflow-hidden"}`}
                             >
-                                {!user.avatarUrl && displayChar}
+                                {user.avatarUrl ? (
+                                    <img
+                                        src={user.avatarUrl}
+                                        alt="Avatar"
+                                        className={`w-full h-full flex-shrink-0 ${user.avatarUrl.includes('/avatars/') ? 'object-contain p-1' : 'object-cover'}`}
+                                    />
+                                ) : (
+                                    displayChar
+                                )}
                             </div>
                         </button>
                     )}

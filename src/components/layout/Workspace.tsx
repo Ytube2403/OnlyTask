@@ -26,16 +26,18 @@ export function Workspace() {
         setTime(0);
     }, [activeTask?.id]);
 
-    // Simple timer logic
+    // Accurate timer logic resistant to background tab throttling
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (timerRunning) {
+            // Note: time is the accumulated seconds so far. We capture it exactly ONCE when the timer starts.
+            const logicalStartTime = Date.now() - (time * 1000);
             interval = setInterval(() => {
-                setTime((prev) => prev + 1);
+                setTime(Math.floor((Date.now() - logicalStartTime) / 1000));
             }, 1000);
         }
         return () => clearInterval(interval);
-    }, [timerRunning]);
+    }, [timerRunning]); // intentionally omitting 'time' so it acts as initial state for the interval run
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
