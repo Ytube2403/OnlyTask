@@ -49,9 +49,9 @@ export function NotesView() {
 
     return (
         <>
-            <div className="flex-1 h-full bg-neutral-50 flex overflow-hidden w-full">
+            <div className="flex-1 h-full bg-neutral-50 flex flex-col md:flex-row overflow-hidden w-full">
                 {/* Notes Sidebar */}
-                <div className="w-64 border-r border-gray-200 bg-white p-6 flex flex-col gap-6 flex-shrink-0">
+                <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-200 bg-white p-4 md:p-6 flex flex-col gap-4 md:gap-6 flex-shrink-0 z-10">
                     <h2 className="text-xl font-bold text-gray-900 tracking-tight">Library</h2>
 
                     <div className="relative">
@@ -65,10 +65,10 @@ export function NotesView() {
                         />
                     </div>
 
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-row md:flex-col gap-2 md:gap-1 overflow-x-auto pb-2 md:pb-0 flex-shrink-0">
                         <button
                             onClick={() => setSelectedTag(null)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${!selectedTag ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${!selectedTag ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
                         >
                             <Folder size={16} /> All Documents
                         </button>
@@ -76,7 +76,7 @@ export function NotesView() {
                             <button
                                 key={tag}
                                 onClick={() => setSelectedTag(tag)}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${selectedTag === tag ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${selectedTag === tag ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
                             >
                                 <Hash size={16} /> {tag}
                             </button>
@@ -85,8 +85,8 @@ export function NotesView() {
                 </div>
 
                 {/* Notes Grid */}
-                <div className="flex-1 p-8 overflow-y-auto">
-                    <div className="flex items-center justify-between mb-8 max-w-6xl mx-auto">
+                <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 max-w-6xl mx-auto gap-4 sm:gap-0">
                         <div>
                             <h1 className="text-3xl font-extrabold text-gray-900">{selectedTag ? `#${selectedTag}` : "All Documents"}</h1>
                             <p className="text-gray-500 mt-2">{filteredSOPs.length} documents found</p>

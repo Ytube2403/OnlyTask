@@ -181,22 +181,55 @@ export function Inbox() {
 
     if (isCollapsed) {
         return (
-            <div className="hidden md:flex w-16 h-full border-r border-gray-200 bg-white flex-col items-center py-6 flex-shrink-0">
-                <button
-                    onClick={() => setIsCollapsed(false)}
-                    title={t.expand}
-                    className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors shadow-sm"
-                >
-                    <ChevronRight size={20} />
-                </button>
-            </div>
+            <>
+                {/* Mobile Collapsed Bar */}
+                <div className="flex md:hidden w-full p-4 border-b border-gray-200 bg-white items-center justify-between flex-shrink-0 z-10 shadow-sm relative">
+                    <h2 className="text-lg font-semibold text-gray-900 tracking-tight">{t.allTasks}</h2>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setAdding(!adding)}
+                            title={t.quickAdd}
+                            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors shadow-sm">
+                            <Plus size={16} />
+                        </button>
+                        <button
+                            onClick={() => setIsCollapsed(false)}
+                            title={t.expand}
+                            className="p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors shadow-sm"
+                        >
+                            <ChevronRight size={16} className="rotate-90 md:rotate-0" />
+                        </button>
+                    </div>
+                </div>
+                {adding && (
+                    <div className="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 md:hidden z-10 relative">
+                        <input
+                            type="text"
+                            autoFocus
+                            placeholder={t.addTaskPlaceholder}
+                            value={newTaskTitle}
+                            onChange={(e) => setNewTaskTitle(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                            className="w-full px-4 py-2 border border-blue-200 rounded-xl text-sm focus:outline-none shadow-sm"
+                        />
+                    </div>
+                )}
+                {/* Desktop Collapsed Sidebar */}
+                <div className="hidden md:flex w-16 h-full border-r border-gray-200 bg-white flex-col items-center py-6 flex-shrink-0">
+                    <button
+                        onClick={() => setIsCollapsed(false)}
+                        title={t.expand}
+                        className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors shadow-sm"
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
+            </>
         );
     }
 
-    const isHiddenOnMobile = currentView !== "workspace" || !!activeTask;
-
     return (
-        <div className={`w-full md:w-80 h-full border-r border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 ${isHiddenOnMobile ? "hidden md:flex" : "flex"}`}>
+        <div className={`w-full md:w-80 h-[50vh] md:h-full border-b md:border-b-0 md:border-r border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 flex relative z-10`}>
             <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold text-gray-900 tracking-tight">{t.allTasks}</h2>
@@ -211,7 +244,7 @@ export function Inbox() {
                             onClick={() => setIsCollapsed(true)}
                             title={t.collapse}
                             className="p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors shadow-sm">
-                            <ChevronLeft size={16} />
+                            <ChevronLeft size={16} className="-rotate-90 md:rotate-0" />
                         </button>
                     </div>
                 </div>

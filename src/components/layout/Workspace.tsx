@@ -76,11 +76,9 @@ export function Workspace() {
         stopTimer: "Stop Timer"
     };
 
-    const isHiddenOnMobile = !activeTask;
-
     return (
         <>
-            <div className={`flex-1 h-[calc(100vh-72px)] md:h-full bg-neutral-50 p-4 sm:p-6 md:p-10 overflow-y-auto flex-col relative w-full ${isHiddenOnMobile ? "hidden md:flex" : "flex"}`}>
+            <div className="flex-1 h-[calc(100vh-72px)] md:h-full bg-neutral-50 p-4 sm:p-6 md:p-10 overflow-y-auto flex-col relative w-full flex">
                 {/* Top Banner (Hero Section for Star Task & Timer) */}
                 <div className="w-full bg-white border border-gray-200 rounded-3xl p-6 md:p-8 mb-6 md:mb-8 shadow-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 flex-shrink-0">
                     <div className="flex-1 w-full">

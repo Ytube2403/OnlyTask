@@ -133,13 +133,13 @@ export function CalendarView() {
                 </div>
 
                 {/* Calendar Grid Container */}
-                <div className="flex-1 flex flex-col overflow-auto bg-white p-2 sm:p-6">
-                    <div className="border border-gray-200 rounded-xl overflow-hidden flex-1 flex flex-col shadow-sm bg-white min-w-[700px] lg:min-w-0">
+                <div className="flex-1 flex flex-col overflow-auto bg-white p-2 sm:p-6 w-full">
+                    <div className="border border-gray-200 rounded-xl overflow-hidden flex-1 flex flex-col shadow-sm bg-white min-w-[340px] md:min-w-[700px] lg:min-w-0">
 
                         {/* Days of Week Header */}
                         <div className="grid grid-cols-7 border-b border-gray-200 bg-white flex-shrink-0">
                             {t.days.map((day, idx) => (
-                                <div key={day} className={`py-2 text-center text-xs font-semibold text-gray-400 tracking-wide ${idx !== 6 ? 'border-r border-gray-200' : ''}`}>
+                                <div key={day} className={`py-2 text-center text-[10px] md:text-xs font-semibold text-gray-400 tracking-wide ${idx !== 6 ? 'border-r border-gray-200' : ''}`}>
                                     {day}
                                 </div>
                             ))}
@@ -162,8 +162,8 @@ export function CalendarView() {
                                         className={`relative p-2.5 flex flex-col transition-colors group ${rightBorder} ${bottomBorder} ${!isCurrentMonth ? 'bg-gray-50/50' : 'bg-white'}`}
                                     >
                                         {/* Date Number */}
-                                        <div className="flex justify-end mb-2">
-                                            <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-semibold transition-all
+                                        <div className="flex justify-end mb-1 md:mb-2">
+                                            <div className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full text-[10px] md:text-xs font-semibold transition-all
                                             ${isCurrentDay
                                                     ? 'bg-rose-500 text-white shadow-sm'
                                                     : isCurrentMonth ? 'text-gray-700 group-hover:bg-gray-100' : 'text-gray-400'
@@ -213,7 +213,7 @@ export function CalendarView() {
                                                                 >
                                                                     <Star className={`w-3.5 h-3.5 ${isImp ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`} />
                                                                 </button>
-                                                                <h4 className="font-semibold text-gray-900 text-xs leading-snug truncate">
+                                                                <h4 className="font-semibold text-gray-900 text-[10px] md:text-xs leading-snug truncate">
                                                                     {task.content}
                                                                 </h4>
                                                             </div>
@@ -232,7 +232,7 @@ export function CalendarView() {
 
                                                             {/* Tag Badge */}
                                                             {task.tag && (
-                                                                <div className="px-1.5 py-0.5 rounded-md bg-stone-100 border border-stone-200">
+                                                                <div className="px-1.5 py-0.5 rounded-md bg-stone-100 border border-stone-200 hidden md:block">
                                                                     <span className="text-[10px] font-medium text-stone-600 truncate max-w-[60px] block">
                                                                         {task.tag}
                                                                     </span>
