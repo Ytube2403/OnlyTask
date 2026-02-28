@@ -7,7 +7,6 @@ import { NotesView } from "@/components/layout/NotesView";
 import { CalendarView } from "@/components/layout/CalendarView";
 import { SettingsView } from "@/components/layout/SettingsView";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { OnboardingOverlay } from "@/components/layout/OnboardingOverlay";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { TaskDetailsModal } from "@/components/TaskDetailsModal";
@@ -66,7 +65,6 @@ export default function Home() {
         isOpen={isNewTaskModalOpen}
         onClose={() => setIsNewTaskModalOpen(false)}
       />
-      <OnboardingOverlay />
     </div>
   );
 }

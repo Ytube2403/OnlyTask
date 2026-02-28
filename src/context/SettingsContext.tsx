@@ -11,13 +11,19 @@ const defaultSettings: AppSettings = {
         deletionWarnings: true,
         deadlineReminders: true,
     },
-    hasSeenOnboarding: false,
+    seenFeatures: {
+        workspace: false,
+        calendar: false,
+        notes: false,
+        sops: false,
+    },
 };
 
 interface SettingsContextType {
     settings: AppSettings;
     updateSettings: (updates: Partial<AppSettings>) => void;
     updateNotifications: (updates: Partial<AppSettings["notifications"]>) => void;
+    markFeatureSeen: (feature: keyof AppSettings["seenFeatures"]) => void;
     clearCache: () => void;
     storageUsage: string;
 }
@@ -74,6 +80,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         }));
     };
 
+    const markFeatureSeen = (feature: keyof AppSettings["seenFeatures"]) => {
+        setSettings((prev) => ({
+            ...prev,
+            seenFeatures: { ...prev.seenFeatures, [feature]: true },
+        }));
+    };
+
     const clearCache = () => {
         if (!user) return;
         const keysToKeep = ["usersMap", "activeUserId", getStorageKey(user.id)];
@@ -86,7 +99,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <SettingsContext.Provider value={{ settings, updateSettings, updateNotifications, clearCache, storageUsage }}>
+        <SettingsContext.Provider value={{ settings, updateSettings, updateNotifications, markFeatureSeen, clearCache, storageUsage }}>
             {children}
         </SettingsContext.Provider>
     );

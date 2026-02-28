@@ -164,6 +164,59 @@ export function TaskProvider({ children }: { children: ReactNode }) {
                 }
 
                 setTasks(validTasks);
+
+                // 🌱 Seed demo tasks for brand new users (no tasks at all)
+                if (validTasks.length === 0 && data.length === 0) {
+                    const demoTasks = [
+                        {
+                            id: crypto.randomUUID(),
+                            user_id: user.id,
+                            column_id: "todo",
+                            content: "👋 Chào mừng! Bấm phím C để tạo task mới bất cứ lúc nào",
+                            description: "Thử ngay: bấm phím C trên bàn phím để mở nhanh form tạo task mới. Khi đang nhập, dùng Cmd/Ctrl+Enter để lưu tức thì.",
+                            tag: "💡 Hướng dẫn",
+                        },
+                        {
+                            id: crypto.randomUUID(),
+                            user_id: user.id,
+                            column_id: "todo",
+                            content: "🎯 Chọn task này rồi bấm Focus Mode để bắt đầu bấm giờ",
+                            description: "Bấm vào task dưới đây để đặt làm Active Task. Sau đó bấm nút Start Timer để vào chế độ tập trung toàn màn hình.",
+                            tag: "💡 Hướng dẫn",
+                        },
+                        {
+                            id: crypto.randomUUID(),
+                            user_id: user.id,
+                            column_id: "in_progress",
+                            content: "📋 Liên kết SOP vào task để có hướng dẫn khi làm việc",
+                            description: "Mở chi tiết task (click vào tên task), cuộn xuống phần 'Linked SOPs' để gắn tài liệu hướng dẫn. Khi vào Focus Mode, SOP sẽ hiển thị ngay bên cạnh.",
+                            tag: "💡 Hướng dẫn",
+                        },
+                        {
+                            id: crypto.randomUUID(),
+                            user_id: user.id,
+                            column_id: "done",
+                            content: "🎉 Hoàn thành task đầu tiên — xem thử luồng Review!",
+                            description: "Kéo thả một task vào cột Đã xong hoặc bấm nút Finish Task trong Focus Mode. Hệ thống sẽ mở form Review để bạn tự chấm điểm công việc.",
+                            tag: "💡 Hướng dẫn",
+                            score: 5,
+                            completion_date: new Date().toISOString(),
+                        },
+                    ];
+
+                    const { error: seedError } = await supabase.from('tasks').insert(demoTasks);
+                    if (!seedError) {
+                        setTasks(demoTasks.map(r => ({
+                            id: r.id,
+                            columnId: r.column_id,
+                            content: r.content,
+                            description: r.description,
+                            tag: r.tag,
+                            score: (r as any).score,
+                            completionDate: (r as any).completion_date,
+                        })));
+                    }
+                }
             }
         };
 

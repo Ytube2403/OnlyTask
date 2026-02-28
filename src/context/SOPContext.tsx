@@ -73,6 +73,45 @@ export function SOPProvider({ children }: { children: ReactNode }) {
 
             if (data) {
                 setSops(data.map(mapRowToSOP));
+
+                // 🌱 Seed a guide SOP for brand new users
+                if (data.length === 0) {
+                    const guideId = crypto.randomUUID();
+                    const guideContent = `<h2>👋 Chào mừng đến với SOPs!</h2>
+<p>SOP (Standard Operating Procedure) là tài liệu hướng dẫn quy trình làm việc của bạn. Dưới đây là những điều bạn cần biết:</p>
+<h3>🔗 Cách liên kết SOP với Task</h3>
+<ol>
+  <li>Mở chi tiết một Task bằng cách chọn nó trong bảng Kanban.</li>
+  <li>Cuộn xuống phần <strong>Linked SOPs</strong> và tìm kiếm SOP theo tên.</li>
+  <li>Khi vào <strong>Focus Mode</strong>, SOP được liên kết sẽ hiển thị song song ngay bên cạnh để bạn vừa làm việc vừa xem hướng dẫn.</li>
+</ol>
+<h3>⌨️ Phím tắt hữu ích</h3>
+<ul>
+  <li><strong>C</strong> — Tạo task mới từ bất kỳ đâu.</li>
+  <li><strong>Cmd/Ctrl + Enter</strong> — Lưu task đang nhập.</li>
+</ul>
+<h3>💡 Mẹo nhanh</h3>
+<p>Tạo một SOP cho mỗi quy trình lặp lại trong công việc của bạn. Gắn tag để dễ tìm kiếm sau này.</p>`;
+
+                    const { error: sopSeedError } = await supabase.from('sop_notes').insert({
+                        id: guideId,
+                        user_id: user.id,
+                        title: "📖 Hướng dẫn sử dụng OnlyTask",
+                        content: guideContent,
+                        tags: ["hướng dẫn"],
+                        updated_at: new Date().toISOString(),
+                    });
+
+                    if (!sopSeedError) {
+                        setSops([{
+                            id: guideId,
+                            title: "📖 Hướng dẫn sử dụng OnlyTask",
+                            content: guideContent,
+                            tags: ["hướng dẫn"],
+                            updatedAt: new Date().toISOString(),
+                        }]);
+                    }
+                }
             }
         };
 
