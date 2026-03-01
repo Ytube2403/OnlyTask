@@ -138,6 +138,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (error.message.toLowerCase().includes("email not confirmed")) {
                 return { success: false, error: "Please verify your email address before logging in." };
             }
+            if (error.message === "Invalid login credentials") {
+                // Supabase obscures unconfirmed emails behind "Invalid login credentials" by default.
+                // We do a fast check just for the error message UX. We use a public `profiles` call.
+                // If the user exists in profiles, but login failed, they either typed wrong pass or are unconfirmed.
+                // We'll give a more helpful combined error just in case.
+                return { success: false, error: "Invalid credentials. If you just registered, please verify your email first." };
+            }
             return { success: false, error: error.message };
         }
         return { success: true };
