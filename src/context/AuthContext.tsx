@@ -154,7 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             options: {
                 data: {
                     display_name: displayName || '',
-                }
+                },
+                emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
             }
         });
 
