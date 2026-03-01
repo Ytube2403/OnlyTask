@@ -181,18 +181,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await loadUserProfile(data.user.id, data.user.email!);
 
             // If the trigger didn't catch it, manually insert initial profile data
-            const { error: profileError } = await supabase.from('profiles').upsert({
-                id: data.user.id,
-                email: data.user.email,
-                display_name: displayName || '',
-                avatar_color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
-                is_premium: false
-            }, { onConflict: 'id' });
+            // Non-blocking in case of RLS policy restricting public insertion
+            try {
+                const { error: profileError } = await supabase.from('profiles').upsert({
+                    id: data.user.id,
+                    email: data.user.email,
+                    display_name: displayName || '',
+                    avatar_color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+                    is_premium: false
+                }, { onConflict: 'id' }).select().single();
 
-            if (profileError) console.error("Error creating initial profile:", profileError);
+                if (profileError) {
+                    console.warn("Could not upsert profile directly (Likely RLS blocking, relying on DB Trigger):", profileError.message);
+                }
+            } catch (err) {
+                console.warn("Error during manual profile creation fallback:", err);
+            }
         }
 
-        return { success: true };
+        return { success: true, error: "Registration successful! Please check your email to verify your account." };
     };
 
     const logout = async () => {
