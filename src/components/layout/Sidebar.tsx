@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckSquare, Calendar, BookOpen, Settings, LayoutDashboard, Crown } from "lucide-react";
+import { CheckSquare, Calendar, BookOpen, Settings } from "lucide-react";
+import Image from "next/image";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
@@ -32,8 +33,8 @@ export function Sidebar() {
     return (
         <>
             <div className="w-full h-[72px] md:w-16 md:h-full border-t md:border-t-0 md:border-r border-gray-200 bg-white flex flex-row md:flex-col items-center justify-around md:justify-start py-2 md:py-6 md:gap-6 flex-shrink-0 z-50 fixed bottom-0 left-0 md:relative">
-                <div className="hidden md:flex p-2 bg-black text-white rounded-xl mb-4">
-                    <LayoutDashboard size={20} />
+                <div className="hidden md:flex flex-shrink-0 mb-4 items-center justify-center w-10 h-10 rounded-xl overflow-hidden shadow-sm border border-gray-100 relative">
+                    <Image src="/OnlyTask-Icon.png" alt="OnlyTask Logo" fill className="object-cover" />
                 </div>
                 <NavButton
                     title={t.workspace}

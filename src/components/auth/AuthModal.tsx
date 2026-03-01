@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Mail, ArrowRight, Lock, User, Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
 
 export function AuthModal() {
     const { login, register } = useAuth();
@@ -43,9 +44,10 @@ export function AuthModal() {
 
                 <div className="relative z-10 p-8">
                     {/* Icon */}
-                    <div className="w-16 h-16 bg-black text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-black/10">
-                        <Mail className="w-8 h-8" />
+                    <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-black/10 overflow-hidden relative">
+                        <Image src="/OnlyTask-Icon.png" alt="OnlyTask Logo" fill className="object-cover" />
                     </div>
+                    <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Welcome to OnlyTask</h2>
 
                     {/* Tabs */}
                     <div className="flex bg-gray-100 rounded-xl p-1 mb-6">

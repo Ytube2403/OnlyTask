@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Task Management Dashboard",
-  description: "Personal task management with Kanban, Calendar, and more",
+  title: "OnlyTask",
+  description: "Made with love by Quaan",
 };
 
 export default function RootLayout({

@@ -19,36 +19,50 @@ export function Workspace() {
     const [statsOpen, setStatsOpen] = useState(false);
     const [timerRunning, setTimerRunning] = useState(false);
     const [time, setTime] = useState(0);
-    const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     const linkedSop = activeTask?.linkedSopIds?.[0] ? sops.find(s => s.id === activeTask.linkedSopIds![0]) : null;
 
     useEffect(() => {
-        if (activeTask) {
-            setIsMobileSheetOpen(true);
-        } else {
-            setIsMobileSheetOpen(false);
-        }
-    }, [activeTask]);
+        setMounted(true);
+    }, []);
 
-    // Reset timer when active task changes
+    // Restore timer if it was running before reload
     useEffect(() => {
-        setTimerRunning(false);
-        setTime(0);
+        if (!activeTask) {
+            setTimerRunning(false);
+            setTime(0);
+            return;
+        }
+
+        const savedStart = localStorage.getItem(`timer_start_${activeTask.id}`);
+        if (savedStart) {
+            const logicalStartTime = parseInt(savedStart, 10);
+            const elapsed = Math.floor((Date.now() - logicalStartTime) / 1000);
+            setTime(Math.max(0, elapsed));
+            setTimerRunning(true);
+        } else {
+            setTimerRunning(false);
+            setTime(0);
+        }
     }, [activeTask?.id]);
 
     // Accurate timer logic resistant to background tab throttling
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (timerRunning) {
-            // Note: time is the accumulated seconds so far. We capture it exactly ONCE when the timer starts.
-            const logicalStartTime = Date.now() - (time * 1000);
+        if (timerRunning && activeTask) {
+            let logicalStartTime = parseInt(localStorage.getItem(`timer_start_${activeTask.id}`) || "0", 10);
+            if (!logicalStartTime) {
+                logicalStartTime = Date.now() - (time * 1000);
+                localStorage.setItem(`timer_start_${activeTask.id}`, logicalStartTime.toString());
+            }
+
             interval = setInterval(() => {
                 setTime(Math.floor((Date.now() - logicalStartTime) / 1000));
             }, 1000);
         }
         return () => clearInterval(interval);
-    }, [timerRunning]); // intentionally omitting 'time' so it acts as initial state for the interval run
+    }, [timerRunning, activeTask?.id]);
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
@@ -61,6 +75,7 @@ export function Workspace() {
             updateTask(activeTask.id.toString(), {
                 actualTimeSeconds: (activeTask.actualTimeSeconds || 0) + time
             });
+            localStorage.removeItem(`timer_start_${activeTask.id}`);
         }
         setTimerRunning(false);
         setTime(0);
@@ -195,13 +210,12 @@ export function Workspace() {
                     }
                 </div >
 
-                {/* Mobile Bottom Sheet for Workspace Details */}
-                {isMobileSheetOpen && (
+                {/* Mobile Bottom Sheet for Workspace Details (Only Client-Side) */}
+                {mounted && !!activeTask && (
                     <div
                         className="md:hidden fixed inset-0 z-50 bg-black/40 animate-in fade-in duration-200"
                         onClick={() => {
                             if (!timerRunning) {
-                                setIsMobileSheetOpen(false);
                                 setTimeout(() => setActiveTask(null), 300);
                             }
                         }}
@@ -213,7 +227,6 @@ export function Workspace() {
                             <div className="w-full flex justify-center py-3"
                                 onClick={() => {
                                     if (!timerRunning) {
-                                        setIsMobileSheetOpen(false);
                                         setTimeout(() => setActiveTask(null), 300);
                                     }
                                 }}>
@@ -256,7 +269,6 @@ export function Workspace() {
                                         onClick={() => {
                                             const finalTime = time;
                                             handleStopTimer();
-                                            setIsMobileSheetOpen(false);
 
                                             if (activeTask && activeTask.columnId !== "done") {
                                                 moveTask(activeTask.id.toString(), "", "done");

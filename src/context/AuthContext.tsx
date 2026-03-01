@@ -37,11 +37,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const initializeAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-                await loadUserProfile(session.user.id, session.user.email!);
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    console.warn("Auth session error (handled):", error.message);
+                    await supabase.auth.signOut();
+                } else if (session?.user) {
+                    await loadUserProfile(session.user.id, session.user.email!);
+                }
+            } catch (err) {
+                console.warn("Error getting auth session (handled):", err);
+            } finally {
+                setIsInitialized(true);
             }
-            setIsInitialized(true);
 
             // Listen for auth changes
             const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {

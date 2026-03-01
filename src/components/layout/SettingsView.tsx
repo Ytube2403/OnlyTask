@@ -173,8 +173,8 @@ export function SettingsView() {
                     </SettingRow>
                 </Section>
 
-                <div className="text-center text-xs text-gray-400  mt-8 pb-4">
-                    Task Management Dashboard — Made with ♥
+                <div className="text-center text-xs text-gray-400  mt-8 pb-4 flex items-center justify-center gap-1">
+                    OnlyTask by Quaan
                 </div>
             </div>
         </div>

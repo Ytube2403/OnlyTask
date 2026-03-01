@@ -111,6 +111,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [completedTask, setCompletedTask] = useState<Task | null>(null);
 
+    // Persist activeTask to localStorage whenever it changes
+    useEffect(() => {
+        if (activeTask) {
+            localStorage.setItem('activeTaskId', activeTask.id.toString());
+        } else {
+            localStorage.removeItem('activeTaskId');
+        }
+    }, [activeTask]);
+
     // Sync columns with language
     useEffect(() => {
         setColumns(prev => prev.map(col => {
@@ -164,6 +173,17 @@ export function TaskProvider({ children }: { children: ReactNode }) {
                 }
 
                 setTasks(validTasks);
+
+                // Restore active task from localStorage if it still exists
+                const savedActiveTaskId = localStorage.getItem('activeTaskId');
+                if (savedActiveTaskId) {
+                    const foundTask = validTasks.find(t => t.id.toString() === savedActiveTaskId);
+                    if (foundTask) {
+                        setActiveTask(foundTask);
+                    } else {
+                        localStorage.removeItem('activeTaskId');
+                    }
+                }
 
                 // 🌱 Seed demo tasks for brand new users (no tasks at all)
                 if (validTasks.length === 0 && data.length === 0) {
