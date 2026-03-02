@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function TaskDetailsModal({ isOpen, onClose, task, defaultColumnId }: Props) {
-    const { addTask, updateTask } = useTasks();
+    const { addTask, updateTask, deleteTask } = useTasks();
     const { sops, addSOP } = useSOPs();
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -93,6 +93,12 @@ export function TaskDetailsModal({ isOpen, onClose, task, defaultColumnId }: Pro
                 linkedSopIds,
             });
         }
+        onClose();
+    };
+
+    const handleDelete = async () => {
+        if (!task || !window.confirm("Are you sure you want to delete this task?")) return;
+        await deleteTask(task.id.toString());
         onClose();
     };
 
@@ -264,20 +270,32 @@ export function TaskDetailsModal({ isOpen, onClose, task, defaultColumnId }: Pro
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={!title.trim()}
-                        className="px-6 py-3 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {task ? "Save Changes" : "Create Task"}
-                    </button>
+                <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between items-center gap-3">
+                    <div>
+                        {task && (
+                            <button
+                                onClick={handleDelete}
+                                className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-xl text-sm font-bold transition-colors shadow-sm"
+                            >
+                                Delete Task
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={!title.trim()}
+                            className="px-6 py-3 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {task ? "Save Changes" : "Create Task"}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

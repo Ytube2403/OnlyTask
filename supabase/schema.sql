@@ -88,6 +88,7 @@ CREATE TABLE public.tasks (
     completion_date TIMESTAMP WITH TIME ZONE,
     is_important BOOLEAN DEFAULT false,
     actual_time_seconds NUMERIC,
+    subtasks JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -126,14 +127,17 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies for Avatars
 -- To manage storage policies properly, the syntax requires mapping to storage.objects
+DROP POLICY IF EXISTS "Avatar images are publicly accessible." ON storage.objects;
 CREATE POLICY "Avatar images are publicly accessible."
   ON storage.objects FOR SELECT
   USING ( bucket_id = 'avatars' );
 
+DROP POLICY IF EXISTS "Anyone can upload an avatar." ON storage.objects;
 CREATE POLICY "Anyone can upload an avatar."
   ON storage.objects FOR INSERT
   WITH CHECK ( bucket_id = 'avatars' AND auth.uid() = owner );
 
+DROP POLICY IF EXISTS "Anyone can update their own avatar." ON storage.objects;
 CREATE POLICY "Anyone can update their own avatar."
   ON storage.objects FOR UPDATE
   USING ( bucket_id = 'avatars' AND auth.uid() = owner );

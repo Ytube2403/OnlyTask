@@ -18,6 +18,7 @@ interface TaskContextType {
     setActiveTask: React.Dispatch<React.SetStateAction<Task | null>>;
     addTask: (content: string, options?: Partial<Omit<Task, 'id' | 'content'>>) => Promise<void>;
     updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
+    deleteTask: (id: string) => Promise<void>;
     moveTask: (activeId: string, overId: string, overColumnId: string) => Promise<void>;
     triggerReview: (task: Task) => void;
 }
@@ -74,6 +75,7 @@ function mapRowToTask(row: any): Task {
         completionDate: row.completion_date || undefined,
         isImportant: row.is_important || false,
         actualTimeSeconds: row.actual_time_seconds || undefined,
+        subtasks: row.subtasks || [],
     };
 }
 
@@ -95,6 +97,7 @@ function mapTaskToRow(task: Partial<Task>, userId: string): any {
     if (task.completionDate !== undefined) row.completion_date = task.completionDate;
     if (task.isImportant !== undefined) row.is_important = task.isImportant;
     if (task.actualTimeSeconds !== undefined) row.actual_time_seconds = task.actualTimeSeconds;
+    if (task.subtasks !== undefined) row.subtasks = task.subtasks;
     return row;
 }
 
@@ -260,9 +263,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const tempId = crypto.randomUUID();
         const newTask: Task = {
             id: tempId,
-            columnId: options?.columnId || "todo",
             content,
-            ...options
+            ...options,
+            columnId: options?.columnId || "todo",
         };
 
         // Optimistic update
@@ -295,6 +298,25 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
         if (error) {
             console.error("Error updating task:", error);
+        }
+    }, [user]);
+
+    const deleteTask = useCallback(async (id: string) => {
+        if (!user) return;
+
+        // Optimistic update
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+        setActiveTask((prev) => (prev && prev.id === id ? null : prev));
+
+        // DB Update
+        const { error } = await supabase
+            .from('tasks')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error("Error deleting task:", error);
         }
     }, [user]);
 
@@ -364,6 +386,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
                 setActiveTask,
                 addTask,
                 updateTask,
+                deleteTask,
                 moveTask,
                 triggerReview,
             }}

@@ -20,6 +20,13 @@ export type Task = {
     completionDate?: string; // ISO date string
     isImportant?: boolean;
     actualTimeSeconds?: number;
+    subtasks?: Subtask[];
+};
+
+export type Subtask = {
+    id: string;
+    title: string;
+    completed: boolean;
 };
 
 export type SOP = {

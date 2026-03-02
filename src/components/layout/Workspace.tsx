@@ -3,8 +3,8 @@
 import { KanbanBoard } from "../kanban/KanbanBoard";
 import { SOPEditor } from "../SOPEditor";
 import { StatisticsDashboard } from "../StatisticsDashboard";
-import { Star } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Star, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useTasks } from "@/context/TaskContext";
 import { useSOPs } from "@/context/SOPContext";
 import { useSettings } from "@/context/SettingsContext";
@@ -21,11 +21,52 @@ export function Workspace() {
     const [time, setTime] = useState(0);
     const [mounted, setMounted] = useState(false);
 
+    // Subtask States
+    const [subtaskInput, setSubtaskInput] = useState("");
+    const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+    const subtaskInputRef = useRef<HTMLInputElement>(null);
+
     const linkedSop = activeTask?.linkedSopIds?.[0] ? sops.find(s => s.id === activeTask.linkedSopIds![0]) : null;
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Focus subtask input
+    useEffect(() => {
+        if (isAddingSubtask && subtaskInputRef.current) {
+            subtaskInputRef.current.focus();
+        }
+    }, [isAddingSubtask]);
+
+    // Subtask Handlers
+    const handleAddSubtask = () => {
+        if (!activeTask || !subtaskInput.trim()) {
+            setIsAddingSubtask(false);
+            return;
+        }
+        const newSubtask = { id: window.crypto.randomUUID(), title: subtaskInput.trim(), completed: false };
+        updateTask(activeTask.id.toString(), {
+            subtasks: [...(activeTask.subtasks || []), newSubtask]
+        });
+        setSubtaskInput("");
+        setIsAddingSubtask(false);
+    };
+
+    const toggleSubtask = (subtaskId: string) => {
+        if (!activeTask) return;
+        const updated = (activeTask.subtasks || []).map(st =>
+            st.id === subtaskId ? { ...st, completed: !st.completed } : st
+        );
+        updateTask(activeTask.id.toString(), { subtasks: updated });
+    };
+
+    const deleteSubtask = (subtaskId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!activeTask) return;
+        const updated = (activeTask.subtasks || []).filter(st => st.id !== subtaskId);
+        updateTask(activeTask.id.toString(), { subtasks: updated });
+    };
 
     // Restore timer if it was running before reload
     useEffect(() => {
@@ -43,7 +84,7 @@ export function Workspace() {
             setTimerRunning(true);
         } else {
             setTimerRunning(false);
-            setTime(0);
+            setTime(activeTask.actualTimeSeconds || 0);
         }
     }, [activeTask?.id]);
 
@@ -73,12 +114,11 @@ export function Workspace() {
     const handleStopTimer = () => {
         if (activeTask && time > 0) {
             updateTask(activeTask.id.toString(), {
-                actualTimeSeconds: (activeTask.actualTimeSeconds || 0) + time
+                actualTimeSeconds: time
             });
             localStorage.removeItem(`timer_start_${activeTask.id}`);
         }
         setTimerRunning(false);
-        setTime(0);
     };
 
     const t = settings.language === "vi" ? {
@@ -321,7 +361,7 @@ export function Workspace() {
                                 <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 mb-12">
                                     <div className="flex-1">
                                         <span className="px-3 py-1.5 bg-neutral-800 text-neutral-300 rounded-lg text-sm font-bold uppercase tracking-wider mb-4 inline-block">
-                                            {activeTask ? activeTask.columnId.toString().replace('_', ' ') : "Focus Mode"}
+                                            {activeTask ? (activeTask.columnId?.toString().replace('_', ' ') || "TO DO") : "Focus Mode"}
                                         </span>
                                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-white">
                                             {activeTask?.content}
@@ -350,7 +390,7 @@ export function Workspace() {
                                                         const updatedTask = {
                                                             ...activeTask,
                                                             columnId: "done",
-                                                            actualTimeSeconds: (activeTask.actualTimeSeconds || 0) + finalTime
+                                                            actualTimeSeconds: finalTime
                                                         };
                                                         setActiveTask(updatedTask);
                                                         triggerReview(updatedTask);
@@ -397,32 +437,75 @@ export function Workspace() {
                                                 <span className="w-8 h-8 rounded-lg bg-neutral-800 flex items-center justify-center text-neutral-400">✅</span>
                                                 Checklist
                                             </h3>
-                                            <span className="px-3 py-1 bg-neutral-800 text-neutral-300 rounded-lg text-sm font-bold">1 / 3</span>
+                                            <span className="px-3 py-1 bg-neutral-800 text-neutral-300 rounded-lg text-sm font-bold">
+                                                {activeTask?.subtasks?.filter(s => s.completed).length || 0} / {activeTask?.subtasks?.length || 0}
+                                            </span>
                                         </div>
 
                                         <div className="flex flex-col gap-3 flex-1 overflow-y-auto pr-2">
-                                            {/* Mocked Checklists */}
-                                            <div className="flex items-start gap-4 p-4 rounded-2xl bg-neutral-800 border border-neutral-700 cursor-pointer group">
-                                                <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center mt-0.5 flex-shrink-0">
-                                                    <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                                </div>
-                                                <span className="text-neutral-400 font-medium line-through">Chuẩn bị tài nguyên và input</span>
-                                            </div>
-
-                                            {['Triển khai theo yêu cầu', 'Kiểm tra chất lượng Output'].map((task, i) => (
-                                                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-neutral-600 hover:bg-neutral-800/50 transition-all cursor-pointer group">
-                                                    <div className="w-6 h-6 rounded-full border-2 border-neutral-600 flex items-center justify-center mt-0.5 flex-shrink-0 group-hover:border-lime-400 transition-colors">
+                                            {(activeTask?.subtasks || []).map((subtask) => (
+                                                <div
+                                                    key={subtask.id}
+                                                    onClick={() => toggleSubtask(subtask.id)}
+                                                    className={`flex items-start gap-4 p-4 rounded-2xl border transition-all cursor-pointer group ${subtask.completed
+                                                            ? 'bg-neutral-800 border-neutral-700'
+                                                            : 'bg-neutral-900 border-neutral-800 hover:border-neutral-600 hover:bg-neutral-800/50'
+                                                        }`}
+                                                >
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 transition-colors ${subtask.completed
+                                                            ? 'bg-lime-400'
+                                                            : 'border-2 border-neutral-600 group-hover:border-lime-400'
+                                                        }`}>
+                                                        {subtask.completed && (
+                                                            <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
                                                     </div>
-                                                    <span className="text-neutral-200 font-medium">{task}</span>
+                                                    <span className={`flex-1 font-medium ${subtask.completed ? 'text-neutral-400 line-through' : 'text-neutral-200'}`}>
+                                                        {subtask.title}
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => deleteSubtask(subtask.id, e)}
+                                                        className="opacity-0 group-hover:opacity-100 text-neutral-500 hover:text-red-400 transition-opacity p-1"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </div>
                                             ))}
 
-                                            <div className="mt-4 flex items-center gap-3">
-                                                <button className="flex items-center gap-3 text-sm font-bold text-neutral-400 hover:text-white transition-colors bg-transparent border-none p-2 w-full text-left">
-                                                    <span className="w-8 h-8 rounded-full border border-dashed border-neutral-600 flex items-center justify-center">+</span>
-                                                    Add Subtask...
-                                                </button>
-                                            </div>
+                                            {isAddingSubtask ? (
+                                                <div className="flex items-center gap-3 p-2 bg-neutral-800 rounded-xl border border-neutral-700 mt-2">
+                                                    <input
+                                                        ref={subtaskInputRef}
+                                                        type="text"
+                                                        value={subtaskInput}
+                                                        onChange={(e) => setSubtaskInput(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') handleAddSubtask();
+                                                            if (e.key === 'Escape') {
+                                                                setIsAddingSubtask(false);
+                                                                setSubtaskInput("");
+                                                            }
+                                                        }}
+                                                        onBlur={() => {
+                                                            if (subtaskInput.trim() === "") setIsAddingSubtask(false);
+                                                        }}
+                                                        placeholder="What needs to be done?"
+                                                        className="bg-transparent border-none outline-none text-white text-sm w-full font-medium"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="mt-4 flex items-center gap-3">
+                                                    <button
+                                                        onClick={() => setIsAddingSubtask(true)}
+                                                        className="flex items-center gap-3 text-sm font-bold text-neutral-400 hover:text-white transition-colors bg-transparent border-none p-2 w-full text-left"
+                                                    >
+                                                        <span className="w-8 h-8 rounded-full border border-dashed border-neutral-600 flex items-center justify-center">+</span>
+                                                        Add Subtask...
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

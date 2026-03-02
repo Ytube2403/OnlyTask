@@ -250,8 +250,8 @@ export function Inbox() {
 
     return (
         <div className={`border-gray-200 bg-white flex-col flex-shrink-0 transition-all duration-300 flex z-10 ${isMobile && !isCollapsed
-                ? 'fixed inset-x-0 top-0 bottom-[72px] z-50'
-                : 'w-full md:w-80 h-full border-b md:border-b-0 md:border-r relative'
+            ? 'fixed inset-x-0 top-0 bottom-[72px] z-50'
+            : 'w-full md:w-80 h-full border-b md:border-b-0 md:border-r relative'
             }`}>
             {isMobile && !isCollapsed && (
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
@@ -479,7 +479,7 @@ function TaskItem({
                 <h3 className="font-medium text-gray-900 truncate leading-tight flex-1 pr-2">{title}</h3>
                 <button
                     onClick={onToggleStar}
-                    className={`p-1.5 rounded-lg transition-colors flex-shrink-0 mt-0.5 ${isImportant ? 'text-yellow-500 hover:bg-yellow-100' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-100 opacity-0 group-hover:opacity-100'}`}
+                    className={`p-1.5 rounded-lg transition-colors flex-shrink-0 mt-0.5 ${isImportant ? 'text-yellow-500 hover:bg-yellow-100' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-100 opacity-30 group-hover:opacity-100'}`}
                 >
                     <Star className="w-4 h-4" fill={isImportant ? "currentColor" : "none"} />
                 </button>

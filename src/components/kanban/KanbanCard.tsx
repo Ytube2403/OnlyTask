@@ -75,7 +75,7 @@ export function KanbanCard({ task }: Props) {
                             e.stopPropagation();
                             updateTask(task.id.toString(), { isImportant: !task.isImportant });
                         }}
-                        className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${task.isImportant ? 'text-yellow-500 hover:bg-yellow-100' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-100 opacity-0 group-hover:opacity-100'}`}
+                        className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${task.isImportant ? 'text-yellow-500 hover:bg-yellow-100' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-100 opacity-30 group-hover:opacity-100'}`}
                     >
                         <Star className="w-4 h-4" fill={task.isImportant ? "currentColor" : "none"} />
                     </button>
